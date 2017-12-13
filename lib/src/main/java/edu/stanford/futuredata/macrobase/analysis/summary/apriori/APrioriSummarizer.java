@@ -80,12 +80,12 @@ public class APrioriSummarizer extends BatchSummarizer {
         numOutliers = (long) numOutliersExact;
         baseRate = numOutliersExact*1.0/numEvents;
         suppCount = (int) (minOutlierSupport * numOutliers);
-        // TODO: change back to info
-        log.debug("Outliers: {}", numOutliers);
-        log.debug("Outlier Rate of: {}", baseRate);
-        log.debug("Min Support Count: {}", suppCount);
-        log.debug("Min Ratio Metric: {}", minRatioMetric);
-        log.debug("Using Ratio of: {}", ratioMetric.getClass().getSimpleName());
+
+        log.info("Outliers: {}", numOutliers);
+        log.info("Outlier Rate of: {}", baseRate);
+        log.info("Min Support Count: {}", suppCount);
+        log.info("Min Ratio Metric: {}", minRatioMetric);
+        log.info("Using Ratio of: {}", ratioMetric.getClass().getSimpleName());
 
         // Encoding
         encoder = new AttributeEncoder();
@@ -106,28 +106,17 @@ public class APrioriSummarizer extends BatchSummarizer {
         );
 
         // TODO: clean up
-        if (maxOrder >= 2) {
+        for (int order = 2; order <= maxOrder; ++order) {
             countSet(
                 encoded,
                 countCol,
                 outlierCol,
-                2
+                order
             );
-
-            if (maxOrder >= 3) {
-                countSet(
-                    encoded,
-                    countCol,
-                    outlierCol,
-                    3
-                );
-            }
         }
 
-
         for (int o = 1; o <= maxOrder; o++) {
-            // TODO: change back to info
-            log.debug("Order {} Explanations: {}", o, setSaved.get(o).size());
+            log.info("Order {} Explanations: {}", o, setSaved.get(o).size());
         }
 
     }
@@ -378,9 +367,11 @@ public class APrioriSummarizer extends BatchSummarizer {
     /**
      * Configure what kind of ratio to use for measuring result severity
      * @param ratioMetric configurable metric definition, e.g. RiskRatioMetric
+     * @return this
      */
-    public void setRatioMetric(ExplanationMetric ratioMetric) {
+    public APrioriSummarizer setRatioMetric(ExplanationMetric ratioMetric) {
         this.ratioMetric = ratioMetric;
+        return this;
     }
 
     /**
@@ -388,13 +379,18 @@ public class APrioriSummarizer extends BatchSummarizer {
      * @param minRatio lowest risk ratio to consider for meaningful explanations.
      * @return this
      */
-    public BatchSummarizer setMinRatioMetric(double minRatio) {
+    public APrioriSummarizer setMinRatioMetric(double minRatio) {
         this.minRatioMetric = minRatio;
         return this;
     }
 
-    // TODO: set default better
-    public void setMaxOrder(int maxOrder) {
+    /**
+     * Set the maximum order of explanations found by the Summarizer. Can't be greater than 3
+     * @param maxOrder
+     * @return this
+     */
+    public APrioriSummarizer setMaxOrder(int maxOrder) {
         this.maxOrder = Math.min(maxOrder, 3);
+        return this;
     }
 }
